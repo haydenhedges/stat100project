@@ -1,0 +1,26 @@
+---
+title: "Student Retention Rates"
+author: "Hayden Hedges"
+format: html
+---
+
+```{r}
+#| include: FALSE 
+#|
+library( tidyverse )
+library( janitor )
+library( RColorBrewer )
+library( lubridate )
+library( tinytable )
+
+schools_ret <- read_csv( "schools_ret.csv" )
+```
+
+```{r}
+schools_ret |>
+  ggplot() +
+  geom_bar( aes( x = Average_Rate )) +
+  labs(x = "Average Rate", y = "School") +
+  theme_minimal()
+```
+
