@@ -1,8 +1,14 @@
 ---
-title: "Student Retention Rates"
-author: "Hayden Hedges"
-format: html
+title: "Student Retention Rates and Student Involvement"
+author: "Hayden and Lauren"
+format: revealjs
 ---
+
+## Introduction
+
+- Comparing student retention across national and liberal arts universities 
+- Analyzing how on-campus involvement impacts students' first year experience 
+- How do our findings reflect on Sewanee campus?
 
 ```{r}
 #| include: FALSE 
@@ -14,13 +20,38 @@ library( lubridate )
 library( tinytable )
 
 schools_ret <- read_csv( "schools_ret.csv" )
+Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
 ```
+
+## National University Retention 
 
 ```{r}
 schools_ret |>
   ggplot() +
   geom_bar( aes( x = Average_Rate )) +
-  labs(x = "Average Rate", y = "School") +
+  labs(x = "Average Rate", y = "Number of Schools") +
+  theme_minimal()
+```
+
+## US Liberal Arts University Retention  
+```{r}
+Liberal_Arts_Data_Sheet1 |>
+  ggplot() +
+  geom_bar( aes( x = `Average Retention Rate` )) +
+  labs(x = "Average Rate", y = "Number of Schools") +
+  theme_minimal()
+```
+
+## DIII Retention Rate 
+
+```{r}
+group_retention_rates |>
+  mutate( retentionrate = sub(pattern = "%", replacement = "", retentionrate ) ) |>
+  mutate( retentionrate = as.numeric( retentionrate )) |>
+  ggplot(aes(x = Group, y = retentionrate )) +
+  geom_col(position = "dodge") +
+  labs(title = "Clustered Bar Chart",
+       x = "Category", y = "Value") +
   theme_minimal()
 ```
 
