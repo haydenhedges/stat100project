@@ -1,0 +1,108 @@
+---
+title: "Student Retention Rates and Student Involvement"
+author: "Hayden Hedges and Lauren Langford"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+## Introduction
+
+-   Comparing student retention across national and liberal arts universities
+-   Analyzing how on-campus involvement impacts students' first year experience
+-   How do our findings reflect on Sewanee campus?
+
+```{r}
+#| include: FALSE 
+#|
+library( tidyverse )
+library( janitor )
+library( RColorBrewer )
+library( lubridate )
+library( tinytable )
+library(sf)
+library(tmap)
+library(geodata)
+
+schools_ret <- read_csv( "schools_ret.csv" )
+Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
+geo_retention <- read_csv("StateRetentionRates.csv", show_col_types = F)
+```
+
+## National vs Liberal University Retention
+
+```{r}
+schools_ret |>
+  ggplot() +
+  geom_bar( aes( x = Average_Rate )) +
+  labs(x = "Average Rate", y = "Number of Schools") +
+  theme_minimal()
+```
+
+## Let's Talk Retention
+
+```{r}
+schools_ret |>
+  drop_na( Average_Rate ) |>
+  mutate( Average_Rate = sub("%", "", Average_Rate, fixed=T )) |>
+  mutate( Average_Rate = as.numeric( Average_Rate ) ) |>
+  summarize( Median = median( Average_Rate, na.rm=T ), 
+             Average = mean( Average_Rate, na.rm = T )) |>
+  tt()
+
+Liberal_Arts_Data_Sheet1 |>
+  drop_na( `Average Retention Rate` ) |>
+  mutate( `Average Retention Rate` = sub("%", "", `Average Retention Rate`, fixed=T )) |>
+  mutate( `Average Retention Rate` = as.numeric( `Average Retention Rate` ) ) |>
+  summarize( Median = median( `Average Retention Rate`, na.rm=T ), 
+             Average = mean( `Average Retention Rate`, na.rm = T )) |>
+  tt()
+
+```
+
+## US Liberal Arts University Retention
+
+```{r}
+Liberal_Arts_Data_Sheet1 |>
+  ggplot() +
+  geom_bar( aes( x = `Average Retention Rate` )) +
+  labs(x = "Average Rate", y = "Number of Schools") +
+  theme_minimal()
+
+```
+
+## DIII Retention Rate
+
+```{r}
+group_retention_rates <- read.csv("group_retention_rates.csv")
+
+group_retention_rates <- group_retention_rates |>
+  mutate( retentionrate = sub(pattern = "%", replacement = "", retentionrate ) ) |>
+mutate( retentionrate = as.numeric( retentionrate )) |> ggplot(aes(x = Group, y = retentionrate )) +
+  geom_col(position = "dodge") +
+  labs(title = "DIII Bar Chart",
+       x = "Student Affiliation", y = "Retention") 
+  
+```
+
+```{r}
+geo_retention <- geo_retention[ 1:51, ]
+geo_retention <- geo_retention |>
+  select( State, Rate = No) |>
+  mutate( Rate = as.numeric( gsub( "%", "", Rate, fixed = TRUE ) ) )
+
+tmap_options(basemap.server = "OpenStreetMap")
+tmap_mode("view")
+
+us <- gadm( "USA", level = 1, path = getwd() )
+us <- st_as_sf( us ) |>
+  filter( NAME_1 != "Alaska", NAME_1 != "Hawaii" )
+
+us <- left_join( us, 
+                 geo_retention |> rename( NAME_1 = State) )
+
+tm_shape( us ) +
+  tm_polygons( id = "NAME_1", 
+               fill = "Rate" )
+
+```
