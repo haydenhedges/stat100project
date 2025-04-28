@@ -50,3 +50,8 @@ rsconnect/
 
 # token file 
 TOKEN 
+
+# ignore html,css, etc.:
+UniversityStudentRetention_files/
+SchoolsRetentionData/
+*.html
