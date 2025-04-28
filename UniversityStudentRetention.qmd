@@ -76,14 +76,17 @@ Liberal_Arts_Data_Sheet1 |>
 ```{r}
 group_retention_rates <- read.csv("group_retention_rates.csv")
 
-group_retention_rates <- group_retention_rates |>
+group_retention_rates |>
   mutate( retentionrate = sub(pattern = "%", replacement = "", retentionrate ) ) |>
-mutate( retentionrate = as.numeric( retentionrate )) |> ggplot(aes(x = Group, y = retentionrate )) +
+  mutate( retentionrate = as.numeric( retentionrate )) |> 
+  ggplot(aes(x = Group, y = retentionrate )) +
   geom_col(position = "dodge") +
   labs(title = "DIII Bar Chart",
        x = "Student Affiliation", y = "Retention") 
   
 ```
+
+## US Retention Map 
 
 ```{r}
 geo_retention <- geo_retention[ 1:51, ]
