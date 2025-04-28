@@ -1,7 +1,7 @@
 ---
 title: "Student Retention Rates and Student Involvement"
 author: "Hayden Hedges and Lauren Langford"
-format: html
+format: revealjs
 editor_options: 
   chunk_output_type: console
 ---
