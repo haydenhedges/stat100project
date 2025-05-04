@@ -1,0 +1,41 @@
+---
+title: "your title goes here!"
+author: "your names go here!"
+format: html
+execute: 
+  echo: FALSE
+---
+
+```{r}
+#| include: FALSE 
+#|
+library( tidyverse )
+library( janitor )
+library( RColorBrewer )
+library( lubridate )
+library( tinytable )
+library(sf)
+library(tmap)
+library(geodata)
+
+schools_ret <- read_csv( "schools_ret.csv" )
+Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
+geo_retention <- read_csv("StateRetentionRates.csv", show_col_types = F)
+texas <- read_csv("Texas_Retention.csv")
+```
+
+# Introduction
+
+# Findings
+
+## Club Inv. vs. Retention
+
+```{r}
+ggplot( texas, aes( x = Retention, y = `Club Memberships`, color = factor(`Club Memberships`)) ) +
+  geom_boxplot() +
+  geom_jitter( width = 0.2, alpha = 0.4 ) +
+  theme( legend.position = "none")
+
+```
+
+# Conclusions 

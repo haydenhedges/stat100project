@@ -27,6 +27,7 @@ library(geodata)
 schools_ret <- read_csv( "schools_ret.csv" )
 Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
 geo_retention <- read_csv("StateRetentionRates.csv", show_col_types = F)
+texas <- read_csv("Texas_Retention.csv")
 ```
 
 ## National vs Liberal University Retention
@@ -109,3 +110,22 @@ tm_shape( us ) +
                fill = "Rate" )
 
 ```
+
+## Club Inv. vs. Retention
+
+```{r}
+ggplot( texas, aes( x = Retention, y = `Club Memberships`, color = factor(`Club Memberships`)) ) +
+  geom_boxplot() +
+  geom_jitter( width = 0.2, alpha = 0.4 ) +
+  theme( legend.position = "none")
+
+```
+
+## Takeaways 
+
+   -FYP and PRE at Sewanee
+   
+   -Removal of these programs and retention 
+   
+   -Involvement and post-grad impact 
+
