@@ -1,0 +1,63 @@
+---
+title: "What Affects University Retention?"
+author: "Hayden and Lauren"
+format: html
+execute: 
+  echo: FALSE
+---
+
+```{r}
+#| include: FALSE 
+#|
+library( tidyverse )
+library( janitor )
+library( RColorBrewer )
+library( lubridate )
+library( tinytable )
+library(sf)
+library(tmap)
+library(geodata)
+
+schools_ret <- read_csv( "schools_ret.csv" )
+Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
+geo_retention <- read_csv("StateRetentionRates.csv", show_col_types = F)
+texas <- read_csv("Texas_Retention.csv")
+```
+
+# Introduction
+
+  As defined by the National Center for Educational Statistics, college retention rate is the percentage of first-to-second year undergraduate students who return to the same college the following year. Retention is a key measure of student success and institutional performance, because it reflects how well the college keeps its students enrolled from one year to the next. While access to higher education is possible in every state, the rate of enrollment and retention varies across all fifty states. Whether or not a student stays on a college path is usually determined by unforeseen circumstances and external factors, such as financial instability, mental crisis, or general dissatisfaction with the student’s institution.
+
+  Specifically at our own institution, this is a pressing matter since Sewanee has historically had issues retaining students between the first and second year. We hypothesize that a correlation between the location, institution size and sports affiliation will be the greatest factors to why a student stays in college. To collect this data, we have looked at reports of student retention published directly from universities and third party sources that report on a number of institutions at once. By looking at the correlation between a number of factors, it is possible to discern why a student might decide to drop out or transfer schools.
+
+# Findings
+
+```{r}
+Liberal_Arts_Data_Sheet1 |>
+  ggplot() +
+  geom_bar( aes( x = `Average Retention Rate` )) +
+  labs(x = "Average Rate", y = "Number of Schools") +
+  theme_minimal()
+```
+
+```{r}
+Liberal_Arts_Data_Sheet1 |>
+  drop_na( `Average Retention Rate` ) |>
+  mutate( `Average Retention Rate` = sub("%", "", `Average Retention Rate`, fixed=T )) |>
+  mutate( `Average Retention Rate` = as.numeric( `Average Retention Rate` ) ) |>
+  summarize( Median = median( `Average Retention Rate`, na.rm=T ), 
+             Average = mean( `Average Retention Rate`, na.rm = T )) |>
+  tt()
+```
+
+## Club Inv. vs. Retention
+
+```{r}
+ggplot( texas, aes( x = Retention, y = `Club Memberships`, color = factor(`Club Memberships`)) ) +
+  geom_boxplot() +
+  geom_jitter( width = 0.2, alpha = 0.4 ) +
+  theme( legend.position = "none")
+
+```
+
+# Conclusions 
