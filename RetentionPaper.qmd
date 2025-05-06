@@ -22,6 +22,7 @@ schools_ret <- read_csv( "schools_ret.csv" )
 Liberal_Arts_Data_Sheet1 <- read_csv("Liberal Arts Data - Sheet1.csv")
 geo_retention <- read_csv("StateRetentionRates.csv", show_col_types = F)
 texas <- read_csv("Texas_Retention.csv")
+data <- read_csv("SewaneeRet.csv")
 ```
 
 # Introduction
@@ -31,16 +32,47 @@ texas <- read_csv("Texas_Retention.csv")
   Specifically at our own institution, this is a pressing matter since Sewanee has historically had issues retaining students between the first and second year. We hypothesize that a correlation between the location, institution size and sports affiliation will be the greatest factors to why a student stays in college. To collect this data, we have looked at reports of student retention published directly from universities and third party sources that report on a number of institutions at once. By looking at the correlation between a number of factors, it is possible to discern why a student might decide to drop out or transfer schools.
 
 # Findings
-
+  
 ```{r}
-Liberal_Arts_Data_Sheet1 |>
-  ggplot() +
-  geom_bar( aes( x = `Average Retention Rate` )) +
-  labs(x = "Average Rate", y = "Number of Schools") +
+ggplot(data = data, aes(x = Place, y = RetentionRate, fill = Place)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Retention Rate Comparison",
+       x = "Place",
+       y = "Retention Rate") +
   theme_minimal()
 ```
 
+In relation to Sewanee, retention is a constant issue. To aid in retaining students Sewanee has historically had two main pre orientation programs: PRE and FYP. Both of these were created to introduce Sewanee to first year students and let them explore the domain before their first college classes begin. As both of us have participated in these programs we were curious to know how other schools dealt with retention and what factors might make students leave. Sadly, there is a lack of data at Sewanee on how these programs impact retention, or at the least not enough transparency between faculty and students to make that information public.     
+
+  While we were unable to obtain specific retention data from the Deans’ Office, the comparison between Sewanee’s retention rate compared to the average retention in Tennessee and on a national scale is important to acknowledge. Potential reasons that the retention rate of Sewanee is above average could be the sense of community between students and faculty, or the traditions that make Sewanee unique, or the campus resources to make students find their place on campus. Since Sewanee had decided to disband these beloved programs in favor of the new FYE program, it will be interesting to see how the Sewanee’s retention rate will fluctuate. Hopefully data can be collected in the next few years to compare the difference between the two.
 ```{r}
+schools_ret |>
+  ggplot() +
+  geom_bar( aes( x = Average_Rate )) +
+  labs(x = "Average Rate", y = "Number of Schools (P & N)") +
+  theme_minimal()
+
+```
+
+```{r}
+schools_ret |>
+  ggplot() +
+  geom_bar( aes( x = Average_Rate )) +
+  labs(x = "Average Rate", y = "Number of Schools (P & N)") +
+  theme_minimal()
+```
+
+## Private vs National 
+
+```{r}
+schools_ret |>
+  drop_na( Average_Rate ) |>
+  mutate( Average_Rate = sub("%", "", Average_Rate, fixed=T )) |>
+  mutate( Average_Rate = as.numeric( Average_Rate ) ) |>
+  summarize( Median = median( Average_Rate, na.rm=T ), 
+             Average = mean( Average_Rate, na.rm = T )) |>
+  tt()
+
 Liberal_Arts_Data_Sheet1 |>
   drop_na( `Average Retention Rate` ) |>
   mutate( `Average Retention Rate` = sub("%", "", `Average Retention Rate`, fixed=T )) |>
@@ -48,7 +80,63 @@ Liberal_Arts_Data_Sheet1 |>
   summarize( Median = median( `Average Retention Rate`, na.rm=T ), 
              Average = mean( `Average Retention Rate`, na.rm = T )) |>
   tt()
+
 ```
+
+The higher average (95.33%) and median (95%) freshman retention rates at private universities, compared to those at national universities (92% average and 91.33% median), suggest differences in the student experience and institutional structure. Private universities often host smaller class sizes, creating closer relationships with faculty, and stronger campus communities. This builds a foundation for an institution that fosters a supportive environment that helps students succeed. In contrast, national universities, many of which are large and public, tend to have higher student-to-faculty ratios, which can lead to greater challenges in overall student engagement and support. These differences highlight how institutional size, mission, and resources can significantly impact student retention.
+
+```{r}
+Liberal_Arts_Data_Sheet1 |>
+  ggplot() +
+  geom_bar( aes( x = `Average Retention Rate` )) +
+  labs(x = "Average Rate", y = "Number of Schools (P & N)") +
+  theme_minimal()
+```
+
+ To look at the correlation between retention at different sized schools we first looked at private and national public institutions. So, what is the difference between private and national public institutions? Public national universities are schools that get their funding primarily from the government. These schools are typically large with thousands of students, but of course there are outliers that are smaller. Still, the average size of a public national institution is 6,354 students. Private schools receive some money from the government but mostly in the form of grants. They receive most of their money through tuition fees, private donations, and endowments. The average size of private schools in the U.S. is 1,900 students. 
+  On the one hand, a larger school might cause students to feel more isolated or unable to find meaningful connections. It might also be daunting for people who are not ready to be independent to be dropped in a large place with thousands of unknown people at once. On the other hand, a smaller liberal arts school might leave students feeling just as isolated by a small student body causing them to transfer to larger institutions. To collect data on public versus private institutions we looked at the rate of students who went to public and private schools and how high their retention rates were. On average, public schools had a retention rate of around 95% while private schools had an average of 91%. This goes to show that size of schools most definitely plays a part in whether or not a student finds their place at a school or decides to transfer. While the bar chart has combined the average rates of both private and national public universities. 
+
+## Geographic Impact 
+
+```{r}
+geo_retention <- geo_retention[ 1:51, ]
+geo_retention <- geo_retention |>
+  select( State, Rate = No) |>
+  mutate( Rate = as.numeric( gsub( "%", "", Rate, fixed = TRUE ) ) )
+
+tmap_options(basemap.server = "OpenStreetMap")
+tmap_mode("view")
+
+us <- gadm( "USA", level = 1, path = getwd() )
+us <- st_as_sf( us ) |>
+  filter( NAME_1 != "Alaska", NAME_1 != "Hawaii" )
+
+us <- left_join( us, 
+                 geo_retention |> rename( NAME_1 = State) )
+
+tm_shape( us ) +
+  tm_polygons( id = "NAME_1", 
+               fill = "Rate" )
+```
+
+  Another factor is whether or not a school is located in a more urban vs rural setting. It is hard enough to transition from living with family to living alone, so shifting from living in a more densely populated area to less populated and vice versa can be a contributing factor to why a student might decide to transfer. From the map below it is obvious that states with lower population density that are more rural have a lower retention rate of students. From the graph it is obvious that states known for having larger cities and higher population, such as California and New York, have a higher retention rate than more rural states such as Wyoming and New Mexico. There are many reasons why this could be the case such as students not knowing what it will be like to move from a city to a small town and become complacent. The reverse is also true with a large city possibly being overwhelming to someone who has not lived in one before. 
+  On the west and east coast the states that have schools known for their research institution or academic rigor, like the majority of ivy leagues which are located on the east coast, plays a part in whether or not students are retained. There is something to be said for states with higher population density having a higher retention rate since this could be linked to the amount of public funding that goes towards education. 
+  
+## Sports Affiliation 
+
+```{r}
+group_retention_rates <- read.csv("group_retention_rates.csv")
+
+group_retention_rates |>
+  mutate( retentionrate = sub(pattern = "%", replacement = "", retentionrate ) ) |>
+  mutate( retentionrate = as.numeric( retentionrate )) |> 
+  ggplot(aes(x = Group, y = retentionrate )) +
+  geom_col(position = "dodge") +
+  labs(title = "DIII Bar Chart",
+       x = "Student Affiliation", y = "Retention")
+```
+
+There is also an undeniable connection between retention rates and sports affiliation. Sports can bring a host of positive attributes to a first year student. For starters a sports team gives an immediate support group to someone in a new environment. It also creates a positive relationship between a faculty member and exposes the student to a wider group of the community from the onset of college life. Specifically, our research looked at the retention of students at Division III universities in the Southeast. From the data we examined it was apparent that, on average, students who participated in sports on campus had retention rates around 10% higher than students who did not participate in sports. Interestingly, the percentage of students who participated in intramural sports and were retained is even higher than those who participated in normal student athletics. A variety of factors can impact this including whether the sport takes place in the fall or spring which can play a part in the connections a student makes with their team. From this it can be assumed that interactions on campus that are hosted through sports teams, either official or intramural, can raise the retention rate of universities. This can be taken into account as institutions decide where to focus their spending. For example, it might be beneficial to spend more on athletic based scholarships for athletes or to spend more on athletic funding for students already enrolled.
 
 ## Club Inv. vs. Retention
 
@@ -60,4 +148,12 @@ ggplot( texas, aes( x = Retention, y = `Club Memberships`, color = factor(`Club 
 
 ```
 
+  As can be expected there is a positive correlation between students who participate in clubs on campus and the students who are retained at institutions. As can be seen in the graph below, the number of students who are retained at the institution goes up with the more clubs a student is involved in. It is interesting that Sewanee is so well known for having an engaged student body with people often part of multiple clubs and organization but has a lower retention rate. As both Hayden and I work in the Office of Student Involvement for the Tigers Entertainment Board, we were happy to see that there is a correlation between on campus involvement since part of our job is engaging the student body through free events. This also aligned with our hypothesis that a greater involvement on campus would lead to higher retention rates.
+  Involvement in clubs is important to retention but it also looks good to employers and any other post-grad pursuit. For this reason it is not only beneficial for an institution to have a number of opportunities for students to partake in to retain students, it is also beneficial for students to be involved since it helps build real world experience and show employers that they are capable or more than just school work. Leadership positions in Sewanee also help to build this sense of community employers look for. 
+  
 # Conclusions 
+
+So why does any of this matter? As we mentioned before it is important for a school to know what they are doing right and wrong and as well as what can be improved upon. For this reason, and specifically in the Sewanee's case, its important to have student feedback (or at least an understanding of the factors that make students leave a school). Its also important to look at other schools who are similar to Sewanee and might retain a higher number of students and understand what they are doing differently so that it can be implemented in Sewanee. 
+There are obviously so many more factors that play into why someone would drop out of  a university or transfer to another school. This research, because of the scale of the project and time constraints, didn't even scratch the surface to other reasons someone might transfer like economic constraints, lack of familial support, mental health reasons and so much more. (Everyone has their reasons). I also think it would be interesting to take all these factors into account and look at retention rates in other countries that have free higher education. 
+Still this research gives a comprehensive view of things to take into account when examining why students might be leaving a college at disproportionate rates and how schools can provide more help, whether that be financial or whatever to keep students enrolled.
+
